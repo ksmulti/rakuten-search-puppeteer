@@ -1,0 +1,11 @@
+it's seem th xfvb not install properly
+you should Install xvfb (the X windows virtual framebuffer) packages for ubuntu OS
+$ sudo apt-get update
+$ sudo apt-get install xvfb
+Run Xvfb in the background and specify a display number (10 in my example)
+$ Xvfb :10 -ac &
+Set the DISPLAY variable to the number you chose
+$ export DISPLAY=:10
+
+[gtk]
+sudo apt install libgtk-3-dev
