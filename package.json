@@ -1,5 +1,12 @@
 {
   "dependencies": {
     "puppeteer": "^13.0.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.11.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.25.4",
+    "prettier": "^2.6.0",
+    "prettier-eslint": "^13.0.0"
   }
 }
