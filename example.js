@@ -1,3 +1,7 @@
+/* eslint-disable no-param-reassign */
+/* eslint-disable no-return-assign */
+/* eslint-disable no-promise-executor-return */
+/* eslint-disable no-await-in-loop */
 const puppeteer = require('puppeteer');
 const path = require('path');
 const fs = require('fs');
@@ -5,8 +9,10 @@ const fs = require('fs');
 class RakutenSearch {
     constructor(page) {
         this.page = page;
-        const settingsString = fs.readFileSync('settings.json');
-        this.settings = JSON.parse(settingsString);
+        const settingsRaw = fs.readFileSync('settings.json');
+        this.settings = JSON.parse(settingsRaw.toString());
+        const keywordsRaw = fs.readFileSync('keywords.json');
+        this.keywords = JSON.parse(keywordsRaw.toString());
     }
 
     async loginPage() {
@@ -19,6 +25,34 @@ class RakutenSearch {
         await this.page.type('#loginInner_p', this.settings.password, { delay: 20 });
         await this.page.click('input[name="submit"]');
         await this.page.waitForSelector('#search-input');
+    }
+
+    async search() {
+        await this.page.type('#search-input', this.randomKeywords(), { delay: 20 });
+        await this.page.click('#search-submit');
+        await this.page.waitForSelector('#srchformtxt_qt');
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+            await new Promise((r) => setTimeout(r, 2000));
+            const counter = await this.page.waitForSelector('.KuchisuBar-module__progressCounter1__1NVVE');
+            const counterText = await this.page.evaluate((el) => el.textContent, counter);
+            console.log(`Search count: ${counterText}`);
+
+            if (parseInt(counterText, 10) < 30) {
+                const input = await this.page.waitForSelector('#srchformtxt_qt');
+                await this.page.evaluate((el) => el.value = '', input);
+                await this.page.type('#srchformtxt_qt', this.randomKeywords(), { delay: 20 });
+                await this.page.click('#searchBtn');
+                await this.page.waitForSelector('#srchformtxt_qt');
+            } else {
+                break;
+            }
+        }
+    }
+
+    randomKeywords() {
+        const random = Math.floor(Math.random() * this.keywords.keywords.length);
+        return this.keywords.keywords[random];
     }
 }
 
@@ -38,6 +72,7 @@ class RakutenSearch {
     const rakutenSearch = new RakutenSearch(page);
     await rakutenSearch.loginPage();
     await rakutenSearch.login();
+    await rakutenSearch.search();
 
     await page.screenshot({ path: './screenshot/example.png' });
 
